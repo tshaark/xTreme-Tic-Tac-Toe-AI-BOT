@@ -26,9 +26,9 @@ class Player28:
     
     def minimax(self,board, old_move, depth, alpha, beta, max_player, symbol):
         status = board.find_terminal_state()
-        if time.time() - self.timer>=23:
-            return self.heuristic(board,old_move)
-        if depth == 3 or status[0] != 'CONTINUE':
+        # if time.time() - self.timer>=23:
+        #     return self.heuristic(board,old_move)
+        if depth == 3 or status[0] != 'CONTINUE' or time.time()-self.timer>=23:
             if self.symbol == 'x':
                 return self.heuristic(board, old_move)
             else:
