@@ -20,11 +20,13 @@ class Player28:
             "DRAW",
             "LOSS",
             "MIDDLE",
-            "OPEN",
-            "PRE_WIN",
+            "OPEN_LOSS",
+            "OPEN_WIN",
             "PRE_LOSS",
+            "PRE_WIN",
             "WIN",
-            "ULTIMATE_WIN"
+            "ULTIMATE_WIN",
+            "ULTIMATE_LOSS"
         ]
         self.block_states = ['DRAW', 'WIN', 'LOSS']
 
@@ -46,14 +48,16 @@ class Player28:
             "DRAW": 100,
             "LOSS": -1000,
             "MIDDLE": 0,
-            "OPEN": 300,
-            "PRE_WIN": 300,
+            "OPEN_LOSS": -300,
+            "OPEN_WIN": 300,
             "PRE_LOSS": -500,
+            "PRE_WIN": 500,
             "WIN": 1000,
-            "ULTIMATE_WIN": self.infinity + 1
+            "ULTIMATE_WIN": self.infinity + 1,
+            "ULTIMATE_LOSS": self.ninfinity - 1
         }
 
-    def get_board_state(self, board, old_move, symbol, flag):
+    def get_board_state(self, board, old_move, symbol, flag, player):
         
         cell = (old_move[1] % 3, old_move[2] % 3)
         curr_row = cell[0] * 3
@@ -88,7 +92,6 @@ class Player28:
                     pre_win['x'] = True
                 elif cnt['o'] == 2:
                     pre_win['o'] = True
-                
                 if pre_win['x'] and pre_win['o']:
                     state[k] = "MIDDLE"
                 elif not pre_win['x'] and not pre_win['o']:
@@ -105,7 +108,10 @@ class Player28:
             result = state[1]
 
         if state[0] in self.block_states and state[1] in self.block_states:
-            result = 'OPEN'
+            if player:
+                result = "OPEN_WIN"
+            else:
+                result = "OPEN_LOSS"
         elif state[0] in self.block_states:
             result = state[1]
         elif state[1] in self.block_states:
@@ -118,26 +124,27 @@ class Player28:
         return result
     
     def get_state_utility(self, state):
-        value = self.UTILITY[state]
-        return value
+        # possible additions
+        return self.UTILITY[state]
 
     def heuristic(self, board, old_move, current_move):
 
-        old_cell = (old_move[1] % 3, old_move[2] % 3)
-        current_cell = (current_move[1] % 3, old_move[2] % 3)
+        # old_cell = (old_move[1] % 3, old_move[2] % 3)
+        # current_cell = (current_move[1] % 3, old_move[2] % 3)
 
         value = 0
         state = ""
         # CURRENT BOARD UTILITY
-        state = self.get_board_state(board, old_move, self.symbol, True)
+        state = self.get_board_state(board, old_move, self.symbol, True, True)
         value += self.get_state_utility(state)
         if state == self.symbol:
-            state = self.get_board_state(board, current_move, self.symbol, False)
+            state = self.get_board_state(board, current_move, self.symbol, False, True)
             value += self.get_state_utility(state)
 
         # NEXT CELL UTILITY
-        state = self.get_board_state(board, current_move, self.symbol, False)
+        state = self.get_board_state(board, current_move, self.symbol, False, False)
         value += self.get_state_utility(state)
+        
         return value
 
     def move(self, board, old_move, symbol):
