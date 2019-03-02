@@ -47,22 +47,34 @@ class Player28:
             [(0, 2), (0, 1), (2, 0)]
         ]
 
+        # 2700 b
+        # 2000 p
+        # 1800 p
+        # 1700 b
+        # 1500 b
+        # 1400 p
+        # 1100 b
+        # 1050 p
+        # 750 b
+        # 0 p
+        # -300 b
+
         self.UTILITY = {
-            "BASE": 0,
-            "BIG_SETUP": 0,
-            "DRAW": 0,
-            "LOSS": 0,
-            "MIDDLE": 0,
+            "BASE": 50,
+            "BIG_SETUP": 700,
+            "DRAW": 400,
+            "LOSS": -1000,
+            "MIDDLE": 1000,
             "POST_MIDDLE": 0, # +ve
-            "OPEN": 0, # +ves
+            "OPEN": 0, # +ve
             "POST_LOSS": 0,
             "POST_WIN": 0,
-            "PRE_LOSS": 0,
-            "PRE_WIN": 0,
-            "WIN": 0,
-            "PRE_ULTIMATE_WIN": 0, # rand
-            "ULTIMATE_LOSS": self.ninfinity - 1,
-            "ULTIMATE_WIN": self.infinity + 1
+            "PRE_LOSS": -1000,
+            "PRE_WIN": 800,
+            "WIN": 2000,
+            "PRE_ULTIMATE_WIN": 1000, # rand
+            "ULTIMATE_LOSS": self.ninfinity,
+            "ULTIMATE_WIN": self.infinity
         }
 
     # def get_board_state(self, board, old_move, symbol, flag, player):
@@ -102,9 +114,9 @@ class Player28:
                 cnt[a] += 1
                 cnt[b] += 1
                 cnt[c] += 1
-                if cnt['x'] == 2:
+                if cnt['x'] == 2 and cnt['-'] == 1:
                     pre_win['x'] = True
-                elif cnt['o'] == 2:
+                elif cnt['o'] == 2 and cnt['-'] == 1:
                     pre_win['o'] = True
             
             if not pre_win['x'] and not pre_win['o']:
@@ -184,6 +196,8 @@ class Player28:
                 state[k] = "PRE_ULTIMATE_WIN"
             elif pre_win[symbol]:
                 state[k] = "BIG_SETUP"
+            else:
+                state[k] = "BASE"
         
         if self.UTILITY[state[0]] > self.UTILITY[state[1]]:
             result = state[0]
@@ -211,33 +225,23 @@ class Player28:
 
         # CURRENT BOARD UTILITY
         state = self.get_board_state(board, old_move, self.symbol, True)
-        value += self.get_state_utility(state)
+        value += self.get_state_utility(state) # (pre)win/loss / base / draw / middle
 
+        big_state = self.pre_ultimate_win_state(board, old_move, self.symbol)
         if state == "WIN":
-            state = self.pre_ultimate_win_state(board, old_move, self.symbol)
-            if state == "PRE_ULTIMATE_WIN":
-                state = "ULTIMATE_WIN"
-                return self.UTILITY[state]
-            value += self.UTILITY[state]
-
-            state = self.pre_ultimate_win_state(board, current_move, self.symbol)
-            value += self.UTILITY[state]
+            if big_state == "PRE_ULTIMATE_WIN":
+                return self.UTILITY["ULTIMATE_WIN"]
 
             state = self.get_board_state(board, current_move, self.symbol, False)
-            value += self.get_state_utility(state)
-
+            value += self.get_state_utility(state) # post-middle/win/loss / open
         # NEXT CELL UTILITY
         else:
-
-            state = self.pre_ultimate_win_state(board, current_move, opp_symbol)
-            value -= self.UTILITY[state]
-
-            # state = self.get_board_state(board, current_move, self.symbol, False)
+            state = self.pre_ultimate_win_state(board, old_move, self.symbol)
             state = self.get_board_state(board, current_move, opp_symbol, False)
-            value -= self.get_state_utility(state)
-        
+            value -= self.get_state_utility(state) # post-middle/win/loss / open
 
         
+        value += self.UTILITY[big_state] # BIG_SETUP, PRE_U_W
         return value
 
     def move(self, board, old_move, symbol):
