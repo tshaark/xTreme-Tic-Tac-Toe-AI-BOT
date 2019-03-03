@@ -11,8 +11,10 @@ class Player28:
         self.infinity = 99999999
         self.ninfinity = -99999999
         self.timer = 0
+        self.timeUp = 0
         self.maxPlayerCount = 0
         self.open_win_flag = 0
+        self.depthSoFar = 0
         self.symbol = 'x'
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
@@ -250,19 +252,20 @@ class Player28:
     def move(self, board, old_move, symbol):
         self.timer=time.time()
         self.symbol = symbol
-        # self.available_cells = board.find_valid_move_cells(old_move)
-        value = self.minimax(board, (-1, -1, -1), old_move, 0, self.ninfinity, self.infinity, True, symbol)
+        self.depthSoFar = 3
+        while(time.time() - self.timer < 6):
+            value = self.minimax(board, (-1, -1, -1), old_move, 0, self.ninfinity, self.infinity, True, symbol)
         return self.next_move
 
     
     def minimax(self, board, older_move, old_move, depth, alpha, beta, max_player, symbol):
         status = board.find_terminal_state()
-        # if time.time() - self.timer>=23:
-        #     return self.heuristic(board,old_move)
-        if depth == 4 or status[0] != 'CONTINUE' or time.time() - self.timer >= 23:
+        if depth == self.depthSoFar or status[0] != 'CONTINUE' or time.time() - self.timer >= 23:
             if self.symbol == 'x':
+                self.depthSoFar += 1
                 return self.heuristic(board, older_move, old_move)
             else:
+                self.depthSoFar += 1
                 return (-1 * self.heuristic(board, older_move, old_move))
         if max_player:
             value = self.ninfinity
