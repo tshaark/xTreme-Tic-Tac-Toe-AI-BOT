@@ -17,6 +17,7 @@ import time
 import copy
 import traceback
 from team28 import *
+from team47 import *
 
 TIME = 24
 MAX_PTS = 86
@@ -376,6 +377,9 @@ if __name__ == '__main__':
 	elif option == '3':
 		obj1 = Manual_Player()
 		obj2 = Manual_Player()
+	elif option == '4':
+		obj1 = Team47()
+		obj2 = Player28()
 	else:
 		print 'Invalid option'
 		sys.exit(1)
