@@ -11,11 +11,8 @@ class Player28:
         self.infinity = 99999999
         self.ninfinity = -99999999
         self.timer = 0
-        self.timeUp = 0
-        self.maxPlayerCount = 0
-        self.open_win_flag = 0
-        self.depthSoFar = 0
         self.symbol = 'x'
+        self.depthSoFar = 3
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
         
@@ -230,9 +227,6 @@ class Player28:
 
         big_state = self.pre_ultimate_win_state(board, old_move, self.symbol)
         if state == "WIN":
-            self.maxPlayerCount += 1
-            if self.maxPlayerCount == 1:
-                self.open_win_flag = 1
             if big_state == "PRE_ULTIMATE_WIN":
                 return self.UTILITY["ULTIMATE_WIN"]
 
@@ -240,8 +234,7 @@ class Player28:
             value += self.get_state_utility(state) # post-middle/win/loss / open
         # NEXT CELL UTILITY
         else:
-            self.maxPlayerCount = 0
-            state = self.pre_ultimate_win_state(board, old_move, self.symbol)
+            # state = self.pre_ultimate_win_state(board, old_move, self.symbol)
             state = self.get_board_state(board, current_move, opp_symbol, False)
             value -= self.get_state_utility(state) # post-middle/win/loss / open
 
@@ -253,7 +246,7 @@ class Player28:
         self.timer=time.time()
         self.symbol = symbol
         self.depthSoFar = 3
-        while(time.time() - self.timer < 6):
+        while(time.time() - self.timer < 4):
             value = self.minimax(board, (-1, -1, -1), old_move, 0, self.ninfinity, self.infinity, True, symbol)
         return self.next_move
 
@@ -277,11 +270,7 @@ class Player28:
                     next_flag = 'x'
                 else:
                     next_flag = 'o'
-                if self.open_win_flag == 1:
-                    child_value = self.minimax(board, old_move, move_cell, depth + 1, alpha, beta, True, symbol)
-                    self.open_win_flag = 0
-                else:
-                    child_value = self.minimax(board, old_move, move_cell, depth + 1, alpha, beta, False, next_flag)
+                child_value = self.minimax(board, old_move, move_cell, depth + 1, alpha, beta, False, next_flag)
                 board.big_boards_status[move_cell[0]][move_cell[1]][move_cell[2]] = '-'
                 board.small_boards_status[move_cell[0]][move_cell[1] / 3][move_cell[2] / 3] = '-'
                 if child_value > value:
