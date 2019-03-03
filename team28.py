@@ -37,7 +37,7 @@ class Player28:
         ]
         self.block_states = ['DRAW', 'WIN', 'LOSS']
 
-        self.WEIGHTS = ((6, 4, 6), (4, 10, 4), (6, 4, 6))
+        self.WEIGHTS = ((8, 4, 8), (4, 10, 4), (8, 4, 8))
 
         self.WIN_COMBINATIONS = [
             [(0, 0), (0, 1), (0, 2)],
@@ -68,46 +68,51 @@ class Player28:
         # -300 b + pre_loss
 
         self.UTILITY = {
-            "BASE": 500,
-            "BIG_SETUP": 8000,
-            "DRAW": 1000,
-            "LOSS": -1000,
-            "MIDDLE": 1500,
-            "POST_MIDDLE_WIN": 3000,
-            "POST_MIDDLE_LOSS": -9000,
-            "OPEN_WIN": 6000,
-            "OPEN_LOSS": -600,
-            "PROFIT": 3000,
-            "POST_LOSS": -13000,
-            "POST_WIN": 2500,
-            "PRE_LOSS": -1500,
-            "PRE_WIN": 2000,
-            "WIN": 5000,
-            "PRE_ULTIMATE_WIN": 10000, # rand
+            "BASE": 100,
+            "BIG_SETUP": 0, #8000
+            "DRAW": 0, #1000
+            "DEFENCE": 0, #1000
+            "DEFENCE_SMALL": 0, #1000
+            "LOSS": 0,
+            "MIDDLE": 0, #1500
+            "POST_MIDDLE_WIN": 1000, #3000
+            "POST_MIDDLE_LOSS": -1200, #-9000
+            "OPEN_WIN": 2000, #6000
+            "OPEN_LOSS": -3000, #-600
+            "PROFIT": 0, #3000
+            "POST_WIN": 1000, #2500
+            "POST_LOSS": -1200, #-1300
+            "PRE_LOSS": 0, #-1500
+            "PRE_WIN": 0, #2000
+            "WIN": 1000, #5000
+            "PRE_ULTIMATE_WIN": 0, # 10000
             "ULTIMATE_LOSS": self.ninfinity,
             "ULTIMATE_WIN": self.infinity
         }
 
     def get_base_value(self, state, r, c):
-        return 150 * self.WEIGHTS[r][c]
+        return 50 * self.WEIGHTS[r][c] #150 * self...
 
-    def get_current_board_state(self, board, old_move, symbol):
-        
+    def get_current_board_state(self, board, old_move, current_move, symbol):
+        opp_symbol = 'x'
+        if symbol == 'x':
+            opp_symbol = 'o'
+ 
         cell = (old_move[1] % 3, old_move[2] % 3)
         curr_row = cell[0] * 3
         curr_col = cell[1] * 3
         k = old_move[0]
         state = board.small_boards_status[k][cell[0]][cell[1]]
-        pre_win = {'x': False, 'o': False}
+        pre_win = {'x': False, 'o': False, 'd': False}
 
-        result = ""
+        result = "BASE"
         if state != "-":
             if state == "d":
                 result = "DRAW"
             elif state == symbol:
                 result = "WIN"
-            else:
-                result = "LOSS"
+            if result != "BASE":
+                return result
 
         for pos in self.WIN_COMBINATIONS:
             cnt = {'x' : 0, 'o' : 0, '-' : 0}
@@ -118,20 +123,20 @@ class Player28:
             cnt[a] += 1
             cnt[b] += 1
             cnt[c] += 1
-            if cnt['x'] == 2 and cnt['-'] == 1:
-                pre_win['x'] = True
-            elif cnt['o'] == 2 and cnt['-'] == 1:
-                pre_win['o'] = True
+            mov = (current_move[1] % 3, current_move[2] % 3)
+            if mov in pos:
+                if cnt[symbol] == 2 and cnt['-'] == 1:
+                    pre_win[symbol] = True
+                elif cnt[symbol] == 2 and cnt[opp_symbol] == 1:
+                    pre_win['d'] = True
             # elif cnt[symbol] == '1' and cnt['-'] == 2:
-
-        if not pre_win['x'] and not pre_win['o']:
-            result = "BASE"
-        elif pre_win['x'] and pre_win['o']:
-            result = "MIDDLE"
-        elif pre_win[symbol]:
+        
+        if pre_win[symbol] == True:
             result = "PRE_WIN"
+        elif pre_win['d'] == True:
+            result = "DEFENCE_SMALL"
         else:
-            result = "PRE_LOSS"
+            result = "BASE"
 
         return result
 
@@ -221,7 +226,7 @@ class Player28:
         state = ""
         pre_win = {'x' : False, 'o': False, 'X' : False}
         opp_symbol = 'x'
-        if self.symbol == 'x':
+        if symbol == 'x':
             opp_symbol = 'o'
  
         for k in range(2):
@@ -241,17 +246,22 @@ class Player28:
             cnt[a] += 1
             cnt[b] += 1
             cnt[c] += 1
-            if cnt[symbol] == 3:
-                pre_win['X'] = True
-            elif cnt[symbol] == 2 and cnt['-'] == 1:
-                pre_win[symbol] = True
-            elif pre_win[opp_symbol] == 2 and cnt['-'] == 1:
-                pre_win[opp_symbol] = True
+
+            mov = (move[1] % 3, move[2] % 3)
+            if mov in pos:
+                if cnt[symbol] == 3:
+                    pre_win['X'] = True
+                elif cnt[symbol] == 2 and cnt['-'] == 1:
+                    pre_win[symbol] = True
+                elif pre_win[opp_symbol] == 2 and cnt[symbol] == 1:
+                    pre_win[opp_symbol] = True
 
         if pre_win['X']:
             state = "PRE_ULTIMATE_WIN"
         elif pre_win[symbol]:
             state = "BIG_SETUP"
+        elif pre_win[opp_symbol]:
+            state = "DEFENCE"
         else:
             state = "BASE"
         
@@ -273,7 +283,7 @@ class Player28:
         state = ""
 
         # CURRENT BOARD UTILITY
-        state = self.get_current_board_state(board, old_move, symbol)
+        state = self.get_current_board_state(board, old_move, current_move, symbol)
         if state == "BASE":
             value += self.get_base_value(state, current_cell[0], current_cell[1])
         else:
@@ -301,15 +311,16 @@ class Player28:
         self.symbol = symbol
         best_move = 0
         maxDepth = 1
+        val = 0
         self.stop_time = False
         while time() - self.begin < self.time_limit:
             # (value, move) = self.minimax(board, (-1, -1, -1), old_move, 0, maxDepth, self.ninfinity, self.infinity, True, symbol1, old_move)
-            move = self.move_ok(board, old_move, symbol, maxDepth)
+            val, move = self.move_ok(board, old_move, symbol, maxDepth)
             if not self.stop_time:
                 best_move = move
                 maxDepth += 1
         self.stop_time = False
-        print "loda-best-move", best_move
+        print "MAKABHOSDA", val, "loda-best-move", best_move
         return best_move
 
     def move_ok(self, board, old_move, symbol, depth):
@@ -324,18 +335,18 @@ class Player28:
 				maxi = [i]
 			elif v == maxval:
 				maxi.append(i)
-		return moves[random.choice(maxi)]
+		return maxval, moves[random.choice(maxi)]
 
     def minimax(self, board, older_move, old_move, depth, alpha, beta, max_player, symbol):
         if time() - self.begin > self.time_limit or self.stop_time:
             self.stop_time = True
             return -111
         status = board.find_terminal_state()
-        if status[1] == "WON":
-            if symbol == self.symbol:
-                return self.UTILITY["ULTIMATE_WIN"]
-            else:
-                return self.UTILITY["ULTIMATE_LOSS"]
+        # if status[1] == "WON":
+        #     if symbol == self.symbol:
+        #         return self.UTILITY["ULTIMATE_WIN"]
+        #     else:
+        #         return self.UTILITY["ULTIMATE_LOSS"]
 
         if depth == 0 or status[0] != 'CONTINUE':
             if self.symbol == symbol:
