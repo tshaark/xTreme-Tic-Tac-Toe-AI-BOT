@@ -21,11 +21,15 @@ class Player28:
             "BASE",
             "BIG_SETUP",
             "DRAW",
+            "DEFENCE",
+            "DEFENCE_SMALL",
             "LOSS",
             "MIDDLE",
+            "POST_MIDDLE_WIN",
+            "POST_MIDDLE_LOSS",
             "OPEN_WIN",
             "OPEN_LOSS",
-            "POST_MIDDLE",
+            "PROFIT",
             "POST_LOSS",
             "POST_WIN",
             "PRE_LOSS",
@@ -80,8 +84,8 @@ class Player28:
             "OPEN_WIN": 2000, #6000
             "OPEN_LOSS": -3000, #-600
             "PROFIT": 0, #3000
-            "POST_WIN": 1000, #2500
             "POST_LOSS": -1200, #-1300
+            "POST_WIN": 1000, #2500
             "PRE_LOSS": 0, #-1500
             "PRE_WIN": 0, #2000
             "WIN": 1000, #5000
