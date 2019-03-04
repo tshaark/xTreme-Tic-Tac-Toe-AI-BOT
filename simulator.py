@@ -379,7 +379,7 @@ if __name__ == '__main__':
 		obj2 = Manual_Player()
 	elif option == '4':
 		obj1 = Team47()
-		obj2 = Player28()
+		obj2 = Team28()
 	else:
 		print 'Invalid option'
 		sys.exit(1)
