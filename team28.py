@@ -40,7 +40,7 @@ class Team28:
             "DRAW": 100,
             "DEFENCE": 700,
             "DEFENCE_SMALL": 1000,
-            "LOSS": -1200,
+            "LOSS": -2200,
             "MIDDLE": 0,
             "POST_MIDDLE_WIN": 1300,
             "POST_MIDDLE_LOSS": -3300,
@@ -49,7 +49,7 @@ class Team28:
             "PROFIT": 800,
             "POST_LOSS": -3200,
             "POST_WIN": 1200,
-            "PRE_LOSS": 0,
+            "PRE_LOSS": -1000,
             "PRE_WIN": 800,
             "WIN": 1400,
             "PRE_ULTIMATE_WIN": 1200,
@@ -108,7 +108,10 @@ class Team28:
 
 
     def get_next_board_state(self, board, old_move, symbol, player):
-        
+        opp_symbol = 'x'
+        if symbol == 'x':
+            opp_symbol = 'o'
+    
         cell = (old_move[1] % 3, old_move[2] % 3)
         curr_row = cell[0] * 3
         curr_col = cell[1] * 3
@@ -129,13 +132,22 @@ class Team28:
                 else:
                     state[k] = "DRAW"
                 continue
-                
+            cnt2 = {'x': 0, 'o': 0, '-': 0}
+            for i in range(3):
+                for j in range(3):
+                    x = board.big_boards_status[k][curr_row + i][curr_col + j]
+                    cnt2[x] += 1
+            if cnt2['-'] == 8 and cnt2[opp_symbol] == 1:
+                if player:
+                    state[k] = "BASE"
+                else:
+                    state[k] = "PRE_LOSS"
+                continue
             for pos in self.WIN_COMBINATIONS:
                 cnt = {'x' : 0, 'o' : 0, '-' : 0}
                 a = board.big_boards_status[k][curr_row + pos[0][0]][curr_col + pos[0][1]]
                 b = board.big_boards_status[k][curr_row + pos[1][0]][curr_col + pos[1][1]]
                 c = board.big_boards_status[k][curr_row + pos[2][0]][curr_col + pos[2][1]]
-
                 cnt[a] += 1
                 cnt[b] += 1
                 cnt[c] += 1
@@ -282,7 +294,7 @@ class Team28:
             else:
                 value += self.UTILITY[ultimate_loss_state]
             next_state = self.get_next_board_state(board, current_move, symbol, False)
-            value += self.UTILITY[next_state] # post/open-loss loss
+            value += self.UTILITY[next_state] # post/open-loss pre-loss loss
 
         return value
 
