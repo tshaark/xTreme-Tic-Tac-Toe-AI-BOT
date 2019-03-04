@@ -309,8 +309,8 @@ class Team28:
             val, move = self.move_ok(board, old_move, symbol, maxDepth)
             best_move = move
             if not self.stop_time:
-                if not maxDepth == 6:
-                    maxDepth += 1
+                # if not maxDepth == 6:
+                maxDepth += 1
         self.stop_time = False
         print "value", val, "move", best_move
         return best_move
