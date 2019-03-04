@@ -261,7 +261,7 @@ class Team28:
             value += self.get_base_value(current_cell[0], current_cell[1])
         else:
             if current_state == "PRE_WIN" or current_state == "DEFENCE_SMALL":
-                value += self.get_base_value(current_state, current_cell[0], current_cell[1])
+                value += self.get_base_value(current_cell[0], current_cell[1])
             value += self.UTILITY[current_state] # (pre)win/loss / base / draw / middle
         if current_state == "WIN":
             self.max_player_count += 1
