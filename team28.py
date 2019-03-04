@@ -355,7 +355,7 @@ class Team28:
                     board.small_boards_status[move_cell[0]][move_cell[1] / 3][move_cell[2] / 3] = '-'
                     alpha = max(alpha, score)
                     if self.stop_time:
-                        return self.heuristic(board, old_move, move_cell, symbol)
+                        return score
                 else:
                     score = self.INFINITY
                     board.update(old_move, move_cell, symbol)
@@ -373,7 +373,7 @@ class Team28:
                     board.small_boards_status[move_cell[0]][move_cell[1] / 3][move_cell[2] / 3] = '-'
                     beta = min(beta, score)
                     if self.stop_time:
-                        return -1 * self.heuristic(board, old_move, move_cell, symbol)
+                        return score
                 if alpha >= beta:
                     break
 
