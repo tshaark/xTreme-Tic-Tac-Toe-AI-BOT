@@ -17,7 +17,7 @@ class Team28:
         self.time_limit = 23
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
-        self.block_states = ['DRAW', 'WIN', 'LOSS']
+        self.block_states = ['DRAW', 'WIN']
 
         self.WEIGHTS = ((8, 4, 8), (4, 10, 4), (8, 4, 8))
 
@@ -127,7 +127,7 @@ class Team28:
                 elif temp_state == symbol:
                     state[k] = "WIN"
                 else:
-                    state[k] = "LOSS"
+                    state[k] = "DRAW"
                 continue
                 
             for pos in self.WIN_COMBINATIONS:
@@ -279,7 +279,8 @@ class Team28:
             ultimate_loss_state = self.pre_ultimate_win_state(board, current_move, symbol, False)
             if ultimate_loss_state == "BASE":
                 value -= self.get_base_value(current_cell[0], current_cell[1])
-            value += self.UTILITY[ultimate_loss_state]
+            else:
+                value += self.UTILITY[ultimate_loss_state]
             next_state = self.get_next_board_state(board, current_move, symbol, False)
             value += self.UTILITY[next_state] # post/open-loss loss
 
@@ -296,8 +297,8 @@ class Team28:
             val, move = self.move_ok(board, old_move, symbol, maxDepth)
             best_move = move
             if not self.stop_time:
-                if not maxDepth == 10:
-                    maxDepth += 1
+                # if not maxDepth == 10:
+                maxDepth += 1
         self.stop_time = False
         print "value", val, "move", best_move
         return best_move
