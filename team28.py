@@ -9,8 +9,7 @@ class Team28:
 
     def __init__(self):
         self.available_cells = []
-        self.infinity = 99999999
-        self.ninfinity = -99999999
+        self.INFINITY = 99999999
         self.symbol = 'x'
         self.begin = 0
         self.max_player_count = 0
@@ -37,24 +36,24 @@ class Team28:
 
         self.UTILITY = {
             "BASE": 100,
-            "BIG_SETUP": 500, #8000
-            "DRAW": 100, #1000
-            "DEFENCE": 700, #1000
-            "DEFENCE_SMALL": 1000, #1000
-            "LOSS": -1100,
-            "MIDDLE": 0, #1500
-            "POST_MIDDLE_WIN": 1300, #3000
-            "POST_MIDDLE_LOSS": -3300, #-9000
-            "OPEN_WIN": 2000, #6000
-            "OPEN_LOSS": -4000, #-600
-            "PROFIT": 800, #3000
-            "POST_LOSS": -3200, #-1300
-            "POST_WIN": 1200, #2500
-            "PRE_LOSS": 0, #-1500
-            "PRE_WIN": 800, #2000
-            "WIN": 1400, #5000
-            "PRE_ULTIMATE_WIN": 1200, # 10000
-            "ULTIMATE_LOSS": self.ninfinity,
+            "BIG_SETUP": 500,
+            "DRAW": 100,
+            "DEFENCE": 700,
+            "DEFENCE_SMALL": 1000,
+            "LOSS": -1200,
+            "MIDDLE": 0,
+            "POST_MIDDLE_WIN": 1300,
+            "POST_MIDDLE_LOSS": -3300,
+            "OPEN_WIN": 2000,
+            "OPEN_LOSS": -4000,
+            "PROFIT": 800,
+            "POST_LOSS": -3200,
+            "POST_WIN": 1200,
+            "PRE_LOSS": 0,
+            "PRE_WIN": 800,
+            "WIN": 1400,
+            "PRE_ULTIMATE_WIN": 1200,
+            "ULTIMATE_LOSS": -1000000,
             "ULTIMATE_WIN": 1000000
         }
 
@@ -97,7 +96,6 @@ class Team28:
                     pre_win[symbol] = True
                 elif cnt[symbol] == 2 and cnt[opp_symbol] == 1:
                     pre_win['d'] = True
-            # elif cnt[symbol] == '1' and cnt['-'] == 2:
         
         if pre_win[symbol] == True:
             result = "PRE_WIN"
@@ -189,10 +187,10 @@ class Team28:
         # print result
         return result
 
-    def pre_ultimate_win_state(self, board, move, symbol):
+    def pre_ultimate_win_state(self, board, move, symbol, player):
         
         state = ""
-        pre_win = {'x' : False, 'o': False, 'X' : False}
+        pre_win = {'x' : False, 'o': False, 'X' : False, 'O': False}
         opp_symbol = 'x'
         if symbol == 'x':
             opp_symbol = 'o'
@@ -203,8 +201,11 @@ class Team28:
                     self.small_board_value[k][i][j] = board.small_boards_status[k][i][j]
 
         k = move[0]
-        self.small_board_value[k][move[1] % 3][move[2] % 3] = symbol
-
+        if self.small_board_value[k][move[1] % 3][move[2] % 3] == '-':
+            if player:
+                self.small_board_value[k][move[1] %3][move[2] % 3] = symbol
+            else:
+                self.small_board_value[k][move[1] %3][move[2] % 3] = opp_symbol
         for pos in self.WIN_COMBINATIONS:
             cnt = {'x' : 0, 'o' : 0, '-' : 0, 'd' : 0}
             a = self.small_board_value[k][pos[0][0]][pos[0][1]]
@@ -219,6 +220,8 @@ class Team28:
             if mov in pos:
                 if cnt[symbol] == 3:
                     pre_win['X'] = True
+                elif cnt[opp_symbol] == 3:
+                    pre_win['O'] = True
                 elif cnt[symbol] == 2 and cnt['-'] == 1:
                     pre_win[symbol] = True
                 elif pre_win[opp_symbol] == 2 and cnt[symbol] == 1:
@@ -226,6 +229,8 @@ class Team28:
 
         if pre_win['X']:
             state = "PRE_ULTIMATE_WIN"
+        elif pre_win['O']:
+            state = "ULTIMATE_LOSS"
         elif pre_win[symbol]:
             state = "BIG_SETUP"
         elif pre_win[opp_symbol]:
@@ -236,23 +241,22 @@ class Team28:
         return state
 
 
-    def get_state_utility(self, state):
-        # possible additions ?? >>>> FOUND IT!!!
-        # if state == "BASE":
-        #     pass
-        return self.UTILITY[state]
-
     def heuristic(self, board, old_move, current_move, symbol):
 
         # old_cell = (old_move[1] % 3, old_move[2] % 3)
         current_cell = (current_move[1] % 3, current_move[2] % 3)
+        
+        opp_symbol = 'x'
+        if symbol == 'x':
+            opp_symbol = 'o'
 
         value = 0
         state = ""
 
         # CURRENT BOARD UTILITY
         current_state = self.get_current_board_state(board, old_move, current_move, symbol) # win/base/def-small/pre_win/draw
-        big_state = self.pre_ultimate_win_state(board, old_move, symbol)
+        big_state = self.pre_ultimate_win_state(board, old_move, symbol, True)
+        
         if current_state == "BASE":
             value += self.get_base_value(state, current_cell[0], current_cell[1])
         else:
@@ -272,6 +276,8 @@ class Team28:
 
         else:
             self.max_player_count = 0
+            ultimate_loss_state = self.pre_ultimate_win_state(board, current_move, opp_symbol, False)
+            value += self.UTILITY[ultimate_loss_state]
             next_state = self.get_next_board_state(board, current_move, symbol, False)
             value += self.UTILITY[next_state] # post/open-loss loss
 
@@ -285,7 +291,6 @@ class Team28:
         val = 0
         self.stop_time = False
         while time() - self.begin < self.time_limit:
-            # (value, move) = self.minimax(board, (-1, -1, -1), old_move, 0, maxDepth, self.ninfinity, self.infinity, True, symbol1, old_move)
             val, move = self.move_ok(board, old_move, symbol, maxDepth)
             best_move = move
             if not self.stop_time:
@@ -297,11 +302,11 @@ class Team28:
 
     def move_ok(self, board, old_move, symbol, depth):
         moves = board.find_valid_move_cells(old_move)
-        maxval = self.ninfinity
+        maxval = -self.INFINITY
         maxi = []
         i = 0
         for move in moves:
-            v = self.minimax(board, old_move, move, depth, self.ninfinity, self.infinity, False, symbol)
+            v = self.minimax(board, old_move, move, depth, -self.INFINITY, self.INFINITY, False, symbol)
             # print v
             if v > maxval:
                 maxval = v
@@ -332,7 +337,7 @@ class Team28:
             score = 0
             for move_cell in available_cells:
                 if max_player:
-                    score = self.ninfinity
+                    score = -self.INFINITY
                     board.update(old_move, move_cell, symbol)
                     if symbol == 'o':
                         next_flag = 'x'
@@ -350,7 +355,7 @@ class Team28:
                     if self.stop_time:
                         return self.heuristic(board, old_move, move_cell, symbol)
                 else:
-                    score = self.infinity
+                    score = self.INFINITY
                     board.update(old_move, move_cell, symbol)
                     if symbol == 'o':
                         next_flag = 'x'
