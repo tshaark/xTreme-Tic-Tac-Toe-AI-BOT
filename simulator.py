@@ -17,6 +17,8 @@ import time
 import copy
 import traceback
 from team28 import *
+from achi_wali import *
+from agent import *
 from team47 import *
 
 TIME = 24
@@ -368,9 +370,8 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]	
 	if option == '1':
-		obj1 = Player28()
+		obj1 = Team28()
 		obj2 = Random_Player()
-
 	elif option == '2':
 		obj1 = Random_Player()
 		obj2 = Manual_Player()
@@ -379,6 +380,12 @@ if __name__ == '__main__':
 		obj2 = Manual_Player()
 	elif option == '4':
 		obj1 = Team47()
+		obj2 = Team28()
+	elif option == '5':
+		obj1 = TeamBT()
+		obj2 = Team28()
+	elif option == '6':
+		obj1 = Agent()
 		obj2 = Team28()
 	else:
 		print 'Invalid option'

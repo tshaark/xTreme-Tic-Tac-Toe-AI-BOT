@@ -18,29 +18,6 @@ class Team28:
         self.time_limit = 23
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
-        
-        self.STATES = [
-            "BASE",
-            "BIG_SETUP",
-            "DRAW",
-            "DEFENCE",
-            "DEFENCE_SMALL",
-            "LOSS",
-            "MIDDLE",
-            "POST_MIDDLE_WIN",
-            "POST_MIDDLE_LOSS",
-            "OPEN_WIN",
-            "OPEN_LOSS",
-            "PROFIT",
-            "POST_LOSS",
-            "POST_WIN",
-            "PRE_LOSS",
-            "PRE_WIN",
-            "WIN",
-            "PRE_ULTIMATE_WIN",
-            "ULTIMATE_LOSS",
-            "ULTIMATE_WIN"
-        ]
         self.block_states = ['DRAW', 'WIN', 'LOSS']
 
         self.WEIGHTS = ((8, 4, 8), (4, 10, 4), (8, 4, 8))
@@ -312,8 +289,8 @@ class Team28:
             val, move = self.move_ok(board, old_move, symbol, maxDepth)
             best_move = move
             if not self.stop_time:
-                if maxDepth == 8:
-                    maxDepth = 8
+                if not maxDepth == 10:
+                    maxDepth += 1
         self.stop_time = False
         print "value", val, "move", best_move
         return best_move
