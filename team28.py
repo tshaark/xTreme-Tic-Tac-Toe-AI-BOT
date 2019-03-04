@@ -14,7 +14,7 @@ class Team28:
         self.begin = 0
         self.max_player_count = 0
         self.win_flag = False
-        self.time_limit = 1
+        self.time_limit = 23
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
         self.block_states = ['DRAW', 'WIN', 'LOSS']
@@ -57,8 +57,8 @@ class Team28:
             "ULTIMATE_WIN": 1000000
         }
 
-    def get_base_value(self, state, r, c):
-        return 50 * self.WEIGHTS[r][c] #150 * self...
+    def get_base_value(self, r, c):
+        return 50 * self.WEIGHTS[r][c]
 
     def get_current_board_state(self, board, old_move, current_move, symbol):
         opp_symbol = 'x'
@@ -257,9 +257,10 @@ class Team28:
         # CURRENT BOARD UTILITY
         current_state = self.get_current_board_state(board, old_move, current_move, symbol) # win/base/def-small/pre_win/draw
         big_state = self.pre_ultimate_win_state(board, old_move, symbol, True)
+        if big_state == "":
         
         if current_state == "BASE":
-            value += self.get_base_value(state, current_cell[0], current_cell[1])
+            value += self.get_base_value(current_cell[0], current_cell[1])
         else:
             if current_state == "PRE_WIN" or current_state == "DEFENCE_SMALL":
                 value += self.get_base_value(current_state, current_cell[0], current_cell[1])
@@ -278,6 +279,8 @@ class Team28:
         else:
             self.max_player_count = 0
             ultimate_loss_state = self.pre_ultimate_win_state(board, current_move, symbol, False)
+            if ultimate_loss_state == "BASE":
+                value -= self.get_base_value(current_cell[0], current_cell[1])
             value += self.UTILITY[ultimate_loss_state]
             next_state = self.get_next_board_state(board, current_move, symbol, False)
             value += self.UTILITY[next_state] # post/open-loss loss
