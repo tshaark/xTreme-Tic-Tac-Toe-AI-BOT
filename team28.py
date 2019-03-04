@@ -137,7 +137,7 @@ class Team28:
                 for j in range(3):
                     x = board.big_boards_status[k][curr_row + i][curr_col + j]
                     cnt2[x] += 1
-            if cnt2['-'] == 8 and cnt2[opp_symbol] == 1:
+            if ((cnt2['-'] == 8 or (cnt2['-'] == 7 and cnt2[symbol] == 1)) and (cnt2[opp_symbol] == 1)):
                 if player:
                     state[k] = "BASE"
                 else:
@@ -333,12 +333,6 @@ class Team28:
 
     def minimax(self, board, older_move, old_move, depth, alpha, beta, max_player, symbol):
         status = board.find_terminal_state()
-        # if status[1] == "WON":
-        #     if symbol == self.symbol:
-        #         return self.UTILITY["ULTIMATE_WIN"]
-        #     else:
-        #         return self.UTILITY["ULTIMATE_LOSS"]
-
             
         if depth == 0 or status[0] != 'CONTINUE' or (time() - self.begin > self.time_limit or self.stop_time):
             self.stop_time = True
