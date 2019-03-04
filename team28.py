@@ -13,7 +13,9 @@ class Team28:
         self.ninfinity = -99999999
         self.symbol = 'x'
         self.begin = 0
-        self.time_limit = 2
+        self.max_player_count = 0
+        self.win_flag = False
+        self.time_limit = 23
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
         
@@ -62,13 +64,13 @@ class Team28:
             "DRAW": 100, #1000
             "DEFENCE": 700, #1000
             "DEFENCE_SMALL": 1000, #1000
-            "LOSS": -800,
+            "LOSS": -1100,
             "MIDDLE": 0, #1500
             "POST_MIDDLE_WIN": 1300, #3000
-            "POST_MIDDLE_LOSS": -1300, #-9000
+            "POST_MIDDLE_LOSS": -3300, #-9000
             "OPEN_WIN": 2000, #6000
             "OPEN_LOSS": -4000, #-600
-            "PROFIT": 600, #3000
+            "PROFIT": 800, #3000
             "POST_LOSS": -3200, #-1300
             "POST_WIN": 1200, #2500
             "PRE_LOSS": 0, #-1500
@@ -76,7 +78,7 @@ class Team28:
             "WIN": 1400, #5000
             "PRE_ULTIMATE_WIN": 1200, # 10000
             "ULTIMATE_LOSS": self.ninfinity,
-            "ULTIMATE_WIN": self.infinity
+            "ULTIMATE_WIN": 1000000
         }
 
     def get_base_value(self, state, r, c):
@@ -281,6 +283,9 @@ class Team28:
                 value += self.get_base_value(current_state, current_cell[0], current_cell[1])
             value += self.UTILITY[current_state] # (pre)win/loss / base / draw / middle
         if current_state == "WIN":
+            self.max_player_count += 1
+            if self.max_player_count == 1:
+                self.win_flag = True
             if big_state == "PRE_ULTIMATE_WIN":
                 value += self.UTILITY["ULTIMATE_WIN"]
             value += self.UTILITY[big_state]
@@ -289,6 +294,7 @@ class Team28:
             value += self.UTILITY[next_state] # post/open-win profit
 
         else:
+            self.max_player_count = 0
             next_state = self.get_next_board_state(board, current_move, symbol, False)
             value += self.UTILITY[next_state] # post/open-loss loss
 
@@ -306,10 +312,10 @@ class Team28:
             val, move = self.move_ok(board, old_move, symbol, maxDepth)
             best_move = move
             if not self.stop_time:
-                if maxDepth == 2:
-                    maxDepth = 2
+                if maxDepth == 8:
+                    maxDepth = 8
         self.stop_time = False
-        print "MAKABHOSDA", val, "loda-best-move", best_move
+        print "value", val, "move", best_move
         return best_move
 
     def move_ok(self, board, old_move, symbol, depth):
@@ -355,7 +361,12 @@ class Team28:
                         next_flag = 'x'
                     else:
                         next_flag = 'o'
-                    score = max(score, self.minimax(board, old_move, move_cell, depth - 1, alpha, beta, False, next_flag))
+                    if self.win_flag:
+                        score = max(score, self.minimax(board, old_move, move_cell, depth - 1, alpha, beta, True, next_flag))
+                        self.win_flag = False
+                    else:
+                        score = max(score, self.minimax(board, old_move, move_cell, depth - 1, alpha, beta, False, next_flag))
+                        
                     board.big_boards_status[move_cell[0]][move_cell[1]][move_cell[2]] = '-'
                     board.small_boards_status[move_cell[0]][move_cell[1] / 3][move_cell[2] / 3] = '-'
                     alpha = max(alpha, score)
@@ -368,7 +379,12 @@ class Team28:
                         next_flag = 'x'
                     else:
                         next_flag = 'o'
-                    score = min(score, self.minimax(board, old_move, move_cell, depth - 1, alpha, beta, True, next_flag))
+                    if self.win_flag:
+                        self.win_flag = False
+                        score = min(score, self.minimax(board, old_move, move_cell, depth - 1, alpha, beta, False, next_flag))
+                    else:
+                        score = min(score, self.minimax(board, old_move, move_cell, depth - 1, alpha, beta, True, next_flag))
+
                     board.big_boards_status[move_cell[0]][move_cell[1]][move_cell[2]] = '-'
                     board.small_boards_status[move_cell[0]][move_cell[1] / 3][move_cell[2] / 3] = '-'
                     beta = min(beta, score)
