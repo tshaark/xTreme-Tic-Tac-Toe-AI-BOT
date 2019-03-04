@@ -257,8 +257,6 @@ class Team28:
         # CURRENT BOARD UTILITY
         current_state = self.get_current_board_state(board, old_move, current_move, symbol) # win/base/def-small/pre_win/draw
         big_state = self.pre_ultimate_win_state(board, old_move, symbol, True)
-        if big_state == "":
-        
         if current_state == "BASE":
             value += self.get_base_value(current_cell[0], current_cell[1])
         else:
