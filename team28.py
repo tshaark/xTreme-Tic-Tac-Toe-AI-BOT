@@ -14,7 +14,7 @@ class Team28:
         self.begin = 0
         self.max_player_count = 0
         self.win_flag = False
-        self.time_limit = 23
+        self.time_limit = 1
         self.next_move = (0 , 0, 0)
         self.small_board_value = ([['-' for i in range(3)] for j in range(3)], [['-' for i in range(3)] for j in range(3)])
         self.block_states = ['DRAW', 'WIN', 'LOSS']
@@ -237,7 +237,8 @@ class Team28:
             state = "DEFENCE"
         else:
             state = "BASE"
-        
+        if not player and state != "ULTIMATE_LOSS":
+            state = "BASE"
         return state
 
 
@@ -276,7 +277,7 @@ class Team28:
 
         else:
             self.max_player_count = 0
-            ultimate_loss_state = self.pre_ultimate_win_state(board, current_move, opp_symbol, False)
+            ultimate_loss_state = self.pre_ultimate_win_state(board, current_move, symbol, False)
             value += self.UTILITY[ultimate_loss_state]
             next_state = self.get_next_board_state(board, current_move, symbol, False)
             value += self.UTILITY[next_state] # post/open-loss loss
