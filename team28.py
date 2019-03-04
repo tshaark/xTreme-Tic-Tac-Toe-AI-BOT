@@ -94,7 +94,7 @@ class Team28:
             if mov in pos:
                 if cnt[symbol] == 2 and cnt['-'] == 1:
                     pre_win[symbol] = True
-                elif cnt[symbol] == 2 and cnt[opp_symbol] == 1:
+                elif cnt[opp_symbol] == 2 and cnt[symbol] == 1:
                     pre_win['d'] = True
         
         if pre_win[symbol] == True:
@@ -252,10 +252,10 @@ class Team28:
             opp_symbol = 'o'
 
         value = 0
-        state = ""
+        # state = ""
 
         # CURRENT BOARD UTILITY
-        current_state = self.get_current_board_state(board, old_move, current_move, symbol) # win/base/def-small/pre_win/draw
+        current_state = self.get_current_board_state(board, old_move, current_move, symbol) # win/base/def-small/pre_win/draw/defence-small
         big_state = self.pre_ultimate_win_state(board, old_move, symbol, True)
         if current_state == "BASE":
             value += self.get_base_value(current_cell[0], current_cell[1])
@@ -297,8 +297,8 @@ class Team28:
             val, move = self.move_ok(board, old_move, symbol, maxDepth)
             best_move = move
             if not self.stop_time:
-                # if not maxDepth == 10:
-                maxDepth += 1
+                if not maxDepth == 6:
+                    maxDepth += 1
         self.stop_time = False
         print "value", val, "move", best_move
         return best_move
